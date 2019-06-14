@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+	<head>
+		<meta charset="UTF-8">
+		<title>Les channels</title>
+		<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+	</head>
+	<body>
+		<br/>
+		<div class="container" role="main">
+			<div class="jumbotron">
+				<h1>Thaw</h1>
+			</div>
+			<div class="page-header">
+				<h1 id="login">@</h1>
+				<h4>
+				</h4>
+				<input type="button" class="pull-right btn btn-primary product-add" value="Creer un channel" onclick="createChannel();" style="padding:4px 8px;" />
+				<div id="tupeuxlatejcétéjustepourlaffichage"></div>
+				<br/>
+				<div class="row">
+					<div class="col-md-12">
+						<table class="table table-striped">
+							<thead>
+								<tr>
+									<th>Discussion</th>
+								</tr>
+							</thead>
+							<tbody id="content">
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>	
+		</div>
+		<script>	
+			load_login();
+			load_channels();
+			function load_login() {
+				$.get("/logged/me/username", 
+					function(data, status){
+						$('#login').append(data.login);
+					});
+			}
+			function load_channels() {
+				$.getJSON("/ressources/channels", function (data) {
+					$.each(data, function (key, val) {
+						$(
+						"<tr>"+
+						"<td>" + 
+						"<a href='/logged/chat?channel=" + val.id + "' target='_blank'>#" + val.name + "</a>" +
+						"</td>" +
+						"<td>" + val.owner.chattingName + "</td>" +
+						"<td>" + Object.keys(val.chatters).length + "</td>" +
+						"</tr>"
+						).appendTo("#content");
+					});
+				});
+			}
+			function createChannel() {
+				var newChannel = prompt('Choisissez le nom de votre channel','');
+				$.ajax({
+					type: "POST",
+					url: "/ressources/channels",
+					data: JSON.stringify({name: newChannel}),
+					success: function(id){
+						window.open('/logged/chat?channel='+id,'_blank');
+					},
+					error: function(XMLHttpRequest, textStatus, errorThrown) {
+						alert(XMLHttpRequest.responseText);
+					},
+					async: false //for being not popup-blocked
+				});
+			}
+		</script>
+	</body>
+</html>

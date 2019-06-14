@@ -1,0 +1,130 @@
+<html>
+<head>
+	<title></title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+	<script src="//cdn.jsdelivr.net/sockjs/0.3.4/sockjs.min.js"></script>
+	<script src="/ressources/static/javascript/vertx-eventbus.js"></script>
+	<script src="/ressources/static/javascript/url-parser.js"></script>
+    <link href="/ressources/static/css/bootstrap.css" rel="stylesheet">
+    <link href="/ressources/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+		<br/>
+		<div class="jumbotron">
+			<h1>Thaw</h1>
+		</div>
+        <div class="row pad-top pad-bottom">
+            <div class=" col-lg-6 col-md-9 col-sm-9">
+                <div class="chat-box-div">
+                    <div class="chat-box-head" id = "chatitle">
+                        Chat : 
+                    </div>
+                    <div class="panel-body chat-box-main" id="chat">
+					<br/>
+                    </div>
+                    <div class="chat-box-footer">
+                        <div class="input-group">
+                            <input class="form-control" type="text" id="input">
+                            <span class="input-group-btn">
+                                <button class="btn btn-info" type="button" id="sendbutton">ENVOYER</button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-3 col-sm-3">
+                <div class="chat-box-online-div">
+                    <div class="chat-box-online-head">
+                        En ligne
+                    </div>
+                    <div class="panel-body chat-box-online" id="connect">
+					</div>
+                </div>
+            </div>
+        </div>
+    </div>
+	<script>
+		var id = getParameterByName('channel');
+		$.when(
+			$.getJSON("/ressources/channels/" + id),
+			$.getJSON("/logged/me/username")
+		).done(function(a1,a2){
+			var channel = a1[0];
+			var user = a2[0];
+			document.title = "Thaw : " + channel.name;
+			$('#chatitle').append(channel.name);
+			var setChatters = new Set(); //do not work in IE
+			channel.chatters.forEach(function (chatter) {
+				setChatters.add(chatter.chattingName);
+			});
+			drawAllConnectedBox();
+			var eb = new EventBus('/ressources/channels/eventbus/');
+			eb.onopen = function () {
+				eb.registerHandler("chat_" + id + ".to.client", function (err, msg) {
+					$('#chat').append(messageToHtml(JSON.parse(msg.body)));
+					$('#chat').scrollTop($('#chat')[0].scrollHeight);
+				});
+				eb.registerHandler("chat_" + id + ".join.to.client", function (err, msg) {
+					var chatter = JSON.parse(msg.body).chattingName;
+					setChatters.add(chatter);
+					$('#chat').append(joinMessage(chatter));
+					$('#connect').append(chatterToHtml(chatter))
+				});
+				eb.registerHandler("chat_" + id + ".leave.to.client", function (err, msg) {
+					var chatter = JSON.parse(msg.body).chattingName;
+					setChatters.delete(chatter);
+					$('#chat').append(LeaveMessage(chatter));
+					drawAllConnectedBox();
+				});
+			};
+			document.getElementById('sendbutton').onclick = postOnChat;
+			document.getElementById('input').onkeydown = function (event) {
+				if (event.keyCode == 13 || event.which == 13) {
+					postOnChat();
+				}
+			}
+			function postOnChat() {
+				var msg = $('#input').val();
+				if (msg.length == 0) {
+					return;
+				}
+				eb.publish("chat_" + id + ".to.server", JSON.stringify({sender: user, body: msg}));
+				$('#input').val("");
+			}
+			function messageToHtml(msg) {
+				var body = msg.body;
+				var sender = msg.sender.chattingName; 
+				var time = msg.date.hour + ":" + msg.date.minute;
+				return '<div class="chat-box-left">'+ body + '</div><div class="chat-box-name-left">@' + sender + " " + time + '</div><br/>'
+			}
+			function drawAllConnectedBox() {
+				document.getElementById('connect').innerHTML = "";
+				setChatters.forEach(function (chatter) {
+					$('#connect').append(chatterToHtml(chatter))
+				});
+			}
+			function joinMessage(chatter) {
+				return '<div class="chat-box" style="color:#0000FF">@'+ chatter + ' à rejoint le channel</div><br/>'
+			}
+			function LeaveMessage(chatter) {
+				return '<div class="chat-box" style="color:#FF0000">@'+ chatter + ' à quitter le channel</div><br/>'
+			}
+			function chatterToHtml(chatter) {
+				return "<div class=\"chat-box-online-left\">@" + chatter + "</div>";
+			}
+			window.onbeforeunload = disconnect;
+			window.onunload = disconnect;
+			function disconnect() {
+				$.ajax({
+					url: window.location.href,
+					type: 'DELETE'
+				});
+				return undefined;
+			}
+		});
+	</script>
+</body>
+</html>
