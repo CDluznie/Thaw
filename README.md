@@ -31,4 +31,4 @@ See *libs* for all dependences
 * Compilation : `ant`
 * Run : `java -jar thaw.jar`
 * Generate javadoc : `ant javadoc`
-* Delete binaries : `ant clean`
+* Delete binaries and doc : `ant clean`
