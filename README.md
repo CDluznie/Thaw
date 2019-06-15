@@ -16,7 +16,7 @@ At the root, the server will redirect users to login page and ask for a basic HT
 ### REST API
 
 todo
-The details of the API REST of the server is given in file [*docs/rest_api.txt*](./docs/rest_api.txt)
+The details of the API REST of the server is given in file [docs/rest_api.txt](./docs/rest_api.txt)
 
 ## Requirements
 

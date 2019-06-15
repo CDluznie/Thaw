@@ -7,12 +7,10 @@ User :
   Create a new user.
   The body of the request must be in JSON format containing a field 'name' and a field 'password', corresponding respectively to the user's login and password in plain text.
 
-
 Bot :
 
 – GET /ressources/bots
   Retrieves the list of available bots.
-
 
 Channels :
 
