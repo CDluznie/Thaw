@@ -1,0 +1,43 @@
+User :
+
+– GET /ressources/users
+  Retrieve the list of public users datas.
+
+– POST /ressources/users
+  Create a new user.
+  The body of the request must be in JSON format containing a field 'name' and a field 'password', corresponding respectively to the user's login and password in plain text.
+
+
+Bot :
+
+– GET /ressources/bots
+  Retrieves the list of available bots.
+
+
+Channels :
+
+– GET /ressources/channels
+  Retrieves the list of available channels.
+
+– POST /ressources/channels 
+  Basic HTTP authentication required.
+  Create a new channel.
+  The authenticated user will be the owner of the channel.
+
+– GET /ressources/channels/:id
+  Retrieves the information from the identifier channel :id.
+
+– DELETE /ressources/channels/:id
+  Basic HTTP authentication required.
+  Delete the channel with the identifier :id.
+  The authenticated user must be the owner of the channel.
+
+– GET /ressources/channels/:id/messages
+  Retrieves the list of messages from the channel with the identifier :id.
+  The messages are sorted in ascending order of publication date.
+
+– POST /ressources/channels/:id/bots
+  Basic HTTP authentication required.
+  Create a new instance of a bot in the channel with the identifier :id.
+  The body of the request must be in JSON format containing a field 'name' and a field 'args' corresponding respectively to the name and the arguments of the bot.
+  The authenticated user must be the owner of the channel.
